@@ -3,7 +3,7 @@
 _Creating real, stateful backend behavior in a DeepSeek Harness plugin: the plugin anatomy, typed events, tooling, long-lived control machines, subprocesses, IPC, queues and the security discipline that keeps it safe._
 
 This document is part of the **dsh-plugin-dev** skill. It assumes you have read
-[docs/arquitetura.md] and [docs/interface.md]. Where this file says "measured" it means
+[docs/arquitetura.md](arquitetura.md) and [docs/interface.md](interface.md). Where this file says "measured" it means
 _verified against the real DeepSeek Harness package_ (`@deepseek-ai/dsh@0.1.0-rc.7`
 range) and the reference plugin **dsh-guarded-bot-orchestrator**; the exact source is
 given as `verified in <path>:<line>` for every claim that carries it.
@@ -58,14 +58,17 @@ must be present in the object you ship, or your `apply` gets an incomplete objec
 Invalid config must **throw in `apply`**, at activation time, so the failure is
 audible immediately — never a silent `?? default` that turns on in some unrelated
 code path hours later (`verified in src/index.ts:42-44`, `src/config/schema.ts:220-226`).
-See [docs/seguranca.md] for the full rule; the short version:
+See [docs/seguranca.md](seguranca.md) for the full rule; the short version:
 
 ```ts
 export function assertValidConfig(config: Config): void {
-  if (config.ttlMinutes === undefined || config.ttlMinutes <= 0 || config.ttlMinutes > 480) {
-    throw new Error(`[${name}] tunnel.ttlMinutes invalid: ${config.ttlMinutes}`)
+  if (!Number.isInteger(config.maxRetries) || config.maxRetries < 0 || config.maxRetries > 100) {
+    throw new Error(`[${name}] maxRetries invalid: ${config.maxRetries}`)
   }
-  // NEVER clamp. A 10080 silently reduced to 480 tells the user they got a week.
+  if (!config.bindingHost || !/^[A-Za-z0-9.-]+$/.test(config.bindingHost)) {
+    throw new Error(`[${name}] bindingHost invalid: ${config.bindingHost}`)
+  }
+  // NEVER clamp. A silently reduced retry count tells the user they got a fight they didn't ask for.
 }
 ```
 
@@ -142,7 +145,9 @@ flips the fiber `ACTIVE → PENDING`, and the endpoint silently answers 200 unau
 **Always use `ctx.logger`** — directly available without injection, which is how every
 published DSH package does it.
 
----## 4. `ctx.tools` with Standard Schema — `execute(args)` vs `render`
+---
+
+## 4. `ctx.tools` with Standard Schema — `execute(args)` vs `render`
 
 Tools exposed to the model must be validated with a **Standard Schema** DSL (never hand-rolled
 runtime checks). This both formats LLM hallucinations into structured errors and maps to strict
@@ -156,22 +161,27 @@ Two responsibilities are split deliberately:
 ```ts
 import { s } from 'schemastery' // Standard Schema DSL
 
-export const tool = ctx.tool({
-  name: 'status',
-  schema: s.object({ verbose: s.boolean().default(false) }),
-  async execute({ verbose }) {
-    return verbose ? fullStatus() : { state: currentState() },
+// Register tooling from inside `apply(ctx)` so `ctx` is in scope:
+export default {
+  apply(ctx) {
+    ctx.tool = {
+      name: 'status',
+      schema: s.object({ verbose: s.boolean().default(false) }),
+      async execute({ verbose }) {
+        return verbose ? fullStatus() : { state: currentState() }
+      },
+      output: {
+        render(result) {
+          return [{ type: 'text', text: JSON.stringify(result) }]
+        },
+      },
+    }
   },
-  output: {
-    render(result) {
-      return [{ type: 'text', text: JSON.stringify(result) }],
-    },
-  },
-})
+}
 ```
 
 > The precise `ctx.tools` registration surface changed across the preview range
-> (`tools.register` vs `ctx.tool`). Pin a version and read its `.d.ts`; see [docs/empacotamento.md].
+> (`tools.register` vs `ctx.tool`). Pin a version and read its `.d.ts`; see [docs/empacotamento.md](empacotamento.md).
 
 ---
 
@@ -363,15 +373,15 @@ The subprocess seam is **`ctx.subprocess`**; you call `ctx.subprocess.spawn(spec
 ```ts
 import type { SubprocessSpawnSpec } from '@deepseek-ai/dsh-subprocess'
 
-const spec: SubprocessSpawnSpec = {
-  argv: [process.execPath, entrypoint],          // resolved from import.meta.url, never cwd
-  cwd: packagedWorkerDir,                        // or default from this module's location
-  stdio: ['pipe', 'pipe', 'pipe'],               // stdin piped => dead-man's switch (§10.5)
+// Inside `apply(ctx) { ... }`:
+const { subprocess } = ctx
+const handle = await subprocess.spawn({
+  argv: [process.execPath, workerPath],          // resolved from import.meta.url, never cwd
+  cwd: packageRoot,                              // worker's package root
+  stdio: { stdin: 'pipe', stdout: 'pipe', stderr: 'pipe' },  // object form — stdin piped => dead-man's switch (§10.5)
   graceMs: 3000,                                 // required: the seam applies no defaults
-  signal: abortController.signal,                // abort cascades the termination onto the tree
-}
-const child = ctx.subprocess.spawn(spec)
-child.done.then((outcome) => { /* exitCode, signal */ })
+})
+handle.done.then((outcome) => { /* exitCode, signal */ })
 ```
 
 `SubprocessHandle` gives you `{ done, terminate() }`. `terminate()` is idempotent and is a no-op

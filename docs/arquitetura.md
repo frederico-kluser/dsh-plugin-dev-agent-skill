@@ -4,7 +4,7 @@
 > correto para escrever um plugin Cordis para o DeepSeek Harness (DSH): o
 > micro-core Cordis, o ciclo de vida de uma Fiber, os serviços do host
 > disponíveis em `inject`, a hierarquia de processos que o host orquestra, o
-> canal IPC host↔worker, o contrato de controlo e a máquina de estados do que
+> canal IPC host↔worker, the control contract, and the state machine of
 > what the plugin controls — and, at the end, the inventory of what NOT to do
 > (measured anti-patterns).
 >
@@ -123,7 +123,7 @@ Três pontos que importam para autores:
    por último — morre primeiro, e a barreira — registada primeiro — levanta por
    último: não fica janela em que o plano de controlo responde sem credencial
    (verified in `src/index.ts:699`, `src/index.ts:1098` e o comentário de desenho
-   em `src/index.ts:367-375`; corroborado por `docs/ARCHITECTURE.md:26-28`).
+   em `src/index.ts:367-375`; corroborado por `deepseek-harness-mobile/docs/ARCHITECTURE.md:26-28`).
 
 ---
 
@@ -271,7 +271,7 @@ interface SubprocessHandle {
 > **`ctx.intercept` está refutado como mecanismo de envolver métodos do
 > `webServer`.** No caso real foi *medida e refutada*: é fusão de config e inerte
 > para este serviço. Para interceptar o tráfego, troca-se o dono do dispatcher no
-> `node:http.Server` (`docs/ARCHITECTURE.md` §1). Não desenhes o plugin em cima de
+> `node:http.Server` (`deepseek-harness-mobile/docs/ARCHITECTURE.md` §1). Não desenhes o plugin em cima de
 > `ctx.intercept`.
 
 ---
@@ -476,7 +476,7 @@ Estados (vocabulário em inglês; os rótulos PT são só texto de UI) — verif
 
 **Quem é o dono.** "O controlador serializa a máquina de estados do túnel
 (ligar/desligar)" e as superfícies **nunca chamam o supervisor de túnel
-diretamente** — somente o controlador (`docs/ARCHITECTURE.md` §4 item 5 e
+diretamente** — somente o controlador (`deepseek-harness-mobile/docs/ARCHITECTURE.md` §4 item 5 e
 `src/control/controller.ts`). Telegram, painel e UI são projeções que enviam
 `ControlIntent` e recebem a difusão `state`/`ack`.
 
@@ -490,7 +490,7 @@ edição de UM ficheiro**: `src/dsh/adapter.ts` é o único ponto que importa
 vive em `src/dsh/adapter.ts` — as demais ocorrências do padrão em `src/` são
 comentários JSDoc (verified in `src/dsh/adapter.ts:6-19`).
 
-**Mapa de módulos** (resumo de `docs/ARCHITECTURE.md` §4):
+**Mapa de módulos** (resumo de `deepseek-harness-mobile/docs/ARCHITECTURE.md` §4):
 
 | Área | Módulos |
 | --- | --- |
@@ -505,8 +505,8 @@ comentários JSDoc (verified in `src/dsh/adapter.ts:6-19`).
 **Porque a facade única existe.** Se um símbolo do host sumir, o plugin **falha no
 load** com a faixa testada na mensagem (não compara por string de versão). A
 compatibilidade com o upstream é verificada por **forma** do serviço
-(`docs/ARCHITECTURE.md` §5; `dsh-compat.yml` é a fonte de verdade regenerada em
-`docs/COMPATIBILITY.md`). A superfície do host vem dos `.d.ts` byte-exatos
+(`deepseek-harness-mobile/docs/ARCHITECTURE.md` §5; `dsh-compat.yml` é a fonte de verdade regenerada em
+`deepseek-harness-mobile/docs/COMPATIBILITY.md`). A superfície do host vem dos `.d.ts` byte-exatos
 `types/**` apontados por `tsconfig.json` `paths`.
 
 ---
@@ -630,7 +630,7 @@ descartadas no texto):**
 - `types/dsh-host-webserver/index.d.ts` — API do `WebServer` (byte-exato do tarball).
 - `types/dsh-subprocess/index.d.ts` + `types.d.ts` — `SubprocessRuntime`, `SubprocessSpawnSpec`, `SubprocessHandle`, `scrubbedParentEnv`.
 - `types/cordis/fiber.d.ts` — `FiberState`, semântica de disposers.
-- `docs/ARCHITECTURE.md` — mapa de módulos, relação com upstream.
+- `deepseek-harness-mobile/docs/ARCHITECTURE.md` — mapa de módulos, relação com upstream.
 - `package.json` — `dsh.bundle.patch`, dependências (só `grammy` runtime).
 - `cordis.patch.yml` — 4 camadas, whole-entry replace, row-order não-semântica.
 - `dsh-compat.yml` — faixa `0.1.0-rc.7 .. 0.1.1-rc.1`.
@@ -663,6 +663,6 @@ descartadas no texto):**
 | "URLs de quick tunnel indexadas por buscadores" | **refuted / [UNVERIFIED]** — não afirmado. |
 | "`child.kill()` nunca basta com shell intermediário" | **assim é** — usado como anti-pattern (§11.8), `terminate()` é o verbo certo. |
 | "cookie Secure não funciona em http://127.0.0.1" | **refuted / fora de escopo** — não afirmado. |
-| "existe campo de compatibilidade no package.json" | **refuted** — a compatibilidade é via `dsh-compat.yml` (regenerado em docs/COMPATIBILITY.md), não campo mágico; o package.json usa `dsh.bundle.patch`. |
+| "existe campo de compatibilidade no package.json" | **refuted** — a compatibilidade é via `dsh-compat.yml` (regenerado em deepseek-harness-mobile/docs/COMPATIBILITY.md), não campo mágico; o package.json usa `dsh.bundle.patch`. |
 | "plugin tem N dependências de runtime no host" / "zero dependências" | **[UNVERIFIED]** — depende; o caso real tem só `grammy`. Não generalizar. |
 | "`dsh.bundle.patch` real; `bundle:{}` NÃO ativa" | **assim é** — §10, medido contra 0.1.0-rc.7. |

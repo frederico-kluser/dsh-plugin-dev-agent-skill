@@ -4,7 +4,7 @@
 
 This document answers one question: **how does a DSH plugin change the interface the user sees and talks to?** Every mechanism below is a *reversible effect*: it returns a disposer and is torn down automatically when the Cordis fiber that installed it is disposed (config reload, HMR replacement, plugin unload, or a crashed dependency). Nothing here teaches you to fork the harness — the whole point of the DSH design is that these surfaces are owned, not patched.
 
-> **Reading conventions.** Every fact is either verified in the published packages (`verified in <package>@<version> <file>:<line>`, from the mirrored `.d.ts` tarballs in this skill’s `types/` tree) or measured against a real running composition (`measured, docs/spikes/<file>.md S<k>`). Claims that are **not** confirmed are marked `[UNVERIFIED]`. Do not teach a claim that is refuted (see the honesty filter in §11/§12).
+> **Reading conventions.** Every fact is either verified in the published packages (`verified in <package>@<version> <file>:<line>`, from the mirrored `.d.ts` tarballs in the mirrored `types/` tree in the reference repo `deepseek-harness-mobile`) or measured against a real running composition (`measured, deepseek-harness-mobile/docs/spikes/<file>.md S<k>`). Claims that are **not** confirmed are marked `[UNVERIFIED]`. Do not teach a claim that is refuted (see the honesty filter in §11/§12).
 
 ---
 
@@ -32,7 +32,7 @@ The real-world reference repo (a hardened gateway plugin) exercises L1 + L2 + L3
 
 ## 2. Routes on `ctx.webServer` (L1)
 
-The service is **`ctx.webServer`**, an instance of **`WebServer`** (which extends Cordis `Service`). The names `ctx.httpServer` / `HttpServerService` existed only in the abandoned `0.0.1-rc.1/rc.2` line whose `latest` tag is stagnant — the published harness uses `webServer` (`verified in @deepseek-ai/dsh-host-webserver@0.1.0-rc.7 lib/types/index.d.ts:25,59`; the diff between rc.1 and rc.8 is purely nominal, `measured, docs/spikes/interceptacao.md:41-59`).
+The service is **`ctx.webServer`**, an instance of **`WebServer`** (which extends Cordis `Service`). The names `ctx.httpServer` / `HttpServerService` existed only in the abandoned `0.0.1-rc.1/rc.2` line whose `latest` tag is stagnant — the published harness uses `webServer` (`verified in @deepseek-ai/dsh-host-webserver@0.1.0-rc.7 lib/types/index.d.ts:25,59`; the diff between rc.1 and rc.8 is purely nominal, `measured, deepseek-harness-mobile/docs/spikes/interceptacao.md:41-59`).
 
 ### 2.1 The write API
 
@@ -45,13 +45,13 @@ All route registries live in the `WebServer` and are additive effects:
 | `ctx.webServer.registerUpgrade({ path, handler })` | **exact only** | `() => void` (disposer) | **throws** `webserver: duplicate upgrade route "<path>"` |
 | `ctx.webServer.registerFallback(handler)` | last resort | `() => void` (disposer) | **throws** `webserver: fallback already registered` — single seat |
 
-Verification: the dispatcher table logic is `route.kind === "exact" ? this.exact : this.prefixes`, duplicates throw at `:54-56`, upgrades at `:68`, fallback at `:83` (`verified in @deepseek-ai/dsh-host-webserver@0.1.0-rc.8 lib/index.js:54-83`). The signatures `register(route: WebRoute): () => void` (`:81`), `registerUpgrade` (`:88`), `registerFallback` (`:97`) come from `lib/types/index.d.ts` (`verified, docs/spikes/api-dsh.md:418`).
+Verification: the dispatcher table logic is `route.kind === "exact" ? this.exact : this.prefixes`, duplicates throw at `:54-56`, upgrades at `:68`, fallback at `:83` (`verified in @deepseek-ai/dsh-host-webserver@0.1.0-rc.8 lib/index.js:54-83`). The signatures `register(route: WebRoute): () => void` (`:81`), `registerUpgrade` (`:88`), `registerFallback` (`:97`) come from `lib/types/index.d.ts` (`verified, deepseek-harness-mobile/docs/spikes/api-dsh.md:418`).
 
 > ⚠️ **`kind` is mandatory.** The route table is split by kind; omitting it does not "default" to anything. Use TS inference from the `WebRoute` union so the compiler enforces it.
 
 ### 2.2 The matching order is fixed and immutable
 
-`WebServer` resolves a request with a static, unchangeable priority (`verified in @deepseek-ai/dsh-host-webserver@0.1.0-rc.8 lib/index.js:295-306`, `measured, docs/spikes/api-dsh.md:291`):
+`WebServer` resolves a request with a static, unchangeable priority (`verified in @deepseek-ai/dsh-host-webserver@0.1.0-rc.8 lib/index.js:295-306`, `measured, deepseek-harness-mobile/docs/spikes/api-dsh.md:291`):
 
 ```
 1. exact  (this.exact.get(pathname))          — always wins
@@ -63,7 +63,7 @@ Conflicts are *fail loud at load-time*, not last-write-wins: the second registra
 
 ### 2.3 `registerFallback` is a single seat — do NOT claim it
 
-The fallback seat belongs to `@deepseek-ai/dsh-host-frontend-static`, which renders `index.html` for the SPA (`verified in @deepseek-ai/dsh-host-frontend-static@0.1.0-rc.8 lib/index.js:72`, mounted by `web-runtime`). A second `registerFallback` **throws immediately** — measured: `second registerFallback => lancou: webserver: fallback already registered` (`measured, docs/spikes/superficie-ui.md:374-379`). Never attempt to take it; use your own route prefix instead.
+The fallback seat belongs to `@deepseek-ai/dsh-host-frontend-static`, which renders `index.html` for the SPA (`verified in @deepseek-ai/dsh-host-frontend-static@0.1.0-rc.8 lib/index.js:72`, mounted by `web-runtime`). A second `registerFallback` **throws immediately** — measured: `second registerFallback => lancou: webserver: fallback already registered` (`measured, deepseek-harness-mobile/docs/spikes/superficie-ui.md:374-379`). Never attempt to take it; use your own route prefix instead.
 
 ### 2.4 Example — a simple route + a prefix API
 
@@ -106,7 +106,7 @@ Every `register*` returns a disposer; wrapping them in `ctx.effect` makes the le
 
 ### 2.5 There is NO public API to enumerate registered routes
 
-Do not write code that "lists which routes exist to pick one". `measured, docs/spikes/superficie-ui.md:76-78`: "Não há API pública de listagem" — enumeration is only possible by reading the private tables at runtime (a `.d.ts` comment restates it: "nada que permita enumerar rotas já registadas", `verified in @deepseek-ai/dsh-host-webserver README.md:55`). If you need to discover routes, design around your own prefix, not introspection.
+Do not write code that "lists which routes exist to pick one". `measured, deepseek-harness-mobile/docs/spikes/superficie-ui.md:76-78`: "Não há API pública de listagem" — enumeration is only possible by reading the private tables at runtime (a `.d.ts` comment restates it: "nada que permita enumerar rotas já registadas", `verified in @deepseek-ai/dsh-host-webserver README.md:55`). If you need to discover routes, design around your own prefix, not introspection.
 
 ---
 
@@ -114,7 +114,7 @@ Do not write code that "lists which routes exist to pick one". `measured, docs/s
 
 ### 3.1 What the barrier is for
 
-A route barrier only covers *your* routes. If you must guard the **whole HTTP surface** — the harness `/api` sub-route with its 60+ RPC endpoints, the SPA fallback, and the WebSocket upgrades — a `register`-level wrapper is not enough. The reference gateway exists precisely because the DSH `/api` control plane answered sockets without any credential (official advisory #853, `verified, docs/spikes/interceptacao.md`; the referenced discussion is https://github.com/deepseek-ai/deepseek-harness/discussions/853).
+A route barrier only covers *your* routes. If you must guard the **whole HTTP surface** — the harness `/api` sub-route with its 60+ RPC endpoints, the SPA fallback, and the WebSocket upgrades — a `register`-level wrapper is not enough. The reference gateway exists precisely because the DSH `/api` control plane answered sockets without any credential (official advisory #853, `verified, deepseek-harness-mobile/docs/spikes/interceptacao.md`; the referenced discussion is https://github.com/deepseek-ai/deepseek-harness/discussions/853).
 
 ### 3.2 `ctx.intercept` is config-merge — NOT a method interceptor (refuted as a barrier)
 
@@ -135,26 +135,26 @@ intercept(name: string, config: any) {
 }
 ```
 
-`intercept` is a **per-service configuration merge**, read only by `Service[symbols.resolveConfig]` and passed to plugins loaded *under* the interceptor. **No method is replaced** (`verified in docs/spikes/interceptacao.md:163-239` and `docs/spikes/interceptacao.md:384-410`). Measured consequences for the `webServer`:
+`intercept` is a **per-service configuration merge**, read only by `Service[symbols.resolveConfig]` and passed to plugins loaded *under* the interceptor. **No method is replaced** (`verified in deepseek-harness-mobile/docs/spikes/interceptacao.md:163-239` and `deepseek-harness-mobile/docs/spikes/interceptacao.md:384-410`). Measured consequences for the `webServer`:
 
 - the overload `intercept(name: string, config: any): this` makes the wrong call **compile silently** (`types/cordis/context.d.ts:99`);
 - for `WebServer` the typed overload collapses `config` to `never`, so only the `config: any` overload matches — compiles, does nothing;
-- `grep -c resolveConfig` in the published `webServer` lib/**index.js** returns **0** — the service never even reads the intercept config (`measured, docs/spikes/interceptacao.md:221-239`). A `register` that throws when called was never called, and `/api/state` kept answering 200.
+- `grep -c resolveConfig` in the published `webServer` lib/**index.js** returns **0** — the service never even reads the intercept config (`measured, deepseek-harness-mobile/docs/spikes/interceptacao.md:221-239`). A `register` that throws when called was never called, and `/api/state` kept answering 200.
 
 **The mechanism that works is dispatch-ownership swap** (see §3.3). The pt-BR corpus that teaches "wrap `registerFallback` via `ctx.intercept`" is wrong on this point; this skill inherits and keeps the measurement.
 
 ### 3.3 The mechanism that works: capture → decide → delegate → restore
 
-`measured, docs/spikes/interceptacao.md S12` — 35 assertions, 7 real routes pass through 200 → 401 → 200 across a synchronous disposer. The `WebServer` real HTTP server is a `node:http.Server` created in its `[Service.init]` (`this.server = createServer(...)`, `lib/index.js:121-131`; upgrade listener at `:132-165`). The top of the dispatch is the two `EventEmitter` listener lists for `'request'` and `'upgrade'` — **everything** (`match()`, the fallback, the upgrade table) lives underneath them. Grabbing those two listeners therefore covers `register` (exact + prefix), `registerFallback`, and `registerUpgrade` at once, with no knowledge of any route, and — because the `EventEmitter` refetches the listener list per event — **no load-order requirement**.
+`measured, deepseek-harness-mobile/docs/spikes/interceptacao.md S12` — 35 assertions, 7 real routes pass through 200 → 401 → 200 across a synchronous disposer. The `WebServer` real HTTP server is a `node:http.Server` created in its `[Service.init]` (`this.server = createServer(...)`, `lib/index.js:121-131`; upgrade listener at `:132-165`). The top of the dispatch is the two `EventEmitter` listener lists for `'request'` and `'upgrade'` — **everything** (`match()`, the fallback, the upgrade table) lives underneath them. Grabbing those two listeners therefore covers `register` (exact + prefix), `registerFallback`, and `registerUpgrade` at once, with no knowledge of any route, and — because the `EventEmitter` refetches the listener list per event — **no load-order requirement**.
 
-The algorithm (`verified in deepseek-harness-mobile/src/http/intercept.ts` and `docs/spikes/interceptacao.md:439-462`):
+The algorithm (`verified in deepseek-harness-mobile/src/http/intercept.ts` and `deepseek-harness-mobile/docs/spikes/interceptacao.md:439-462`):
 
 1. **Resolve** the `node:http.Server` inside `webServer` (`this.server`; a runtime scan over `Object.getOwnPropertyNames` with `instanceof Server` is the safety net against field renames — it is the only `private` field this design couples to).
 2. **Capture** `server.listeners('request')` and `server.listeners('upgrade')`.
 3. **`removeAllListeners`** and install **one** owned listener per event that decides (auth/CSRF/allowlist) and then **delegates** to the captured originals.
 4. Return a **synchronous, ownership-checked disposer** that reinstates the originals only if the dispatch is still ours (so two barriers cannot double-write the same `res`).
 
-> ⚠️ Three hard-won rules (all `measured, docs/spikes/interceptacao.md`):
+> ⚠️ Three hard-won rules (all `measured, deepseek-harness-mobile/docs/spikes/interceptacao.md`):
 > **one barrier per server** — stacking a second is refused at install (`BARRIER_ALREADY_INSTALLED`), because out-of-LIFO reversal would run two dispatches over one `res` and raise an uncatchable `ERR_HTTP_HEADERS_SENT`;
 > **never `prependListener`** — Node's `EventEmitter` has no veto; a prepended listener runs first but does not stop the rest, so it cannot *block*. Only being the owner blocks;
 > **only wrap `'upgrade'` if it already exists** — with zero upgrade listeners, Node routes the socket through `request` (which your barrier already guards); installing one where none existed changes server semantics and would hang authorized upgrades.
@@ -213,12 +213,12 @@ Keep the policy (basic auth, CSRF, origin/Host allowlists, session) inside the *
 const renderIndex = async () => ctx.webServer.applyIndexTaps(await readFile(distIndex, 'utf8'))
 ```
 
-`measured, docs/spikes/superficie-ui.md:292-316` on the real published composition:
+`measured, deepseek-harness-mobile/docs/spikes/superficie-ui.md:292-316` on the real published composition:
 
 - on `GET /` there were already **2 host taps** registered: `dsh-client-modules` (injects the `window.__DSH_BOOT__` manifest, `lib/index.js:292`) and `dsh-client-ui-theme` (injects the pre-first-paint theme bootstrap, `lib/index.js:76`);
 - your tap composes **in the same queue** (index went 1745 → 1795 bytes, the extra chrome rendered in the Web UI) and is fully reversible by the disposer (`GET / after disposer: reversible = SIM`).
 
-**Contract for a tap:** keep it unambitious. Prefer adding a `<script src="/your-path/client.js" defer>` and markup with your own `id` namespace before `</body>` — never rewrite the rest of the document, never interpolate tunnel URLs (inject by `textContent` + a route). Most importantly: **whoever serves the index must keep calling `applyIndexTaps`**; if a tap dies, it takes the two host taps with it (`measured, docs/spikes/superficie-ui.md:418`).
+**Contract for a tap:** keep it unambitious. Prefer adding a `<script src="/your-path/client.js" defer>` and markup with your own `id` namespace before `</body>` — never rewrite the rest of the document, never interpolate tunnel URLs (inject by `textContent` + a route). Most importantly: **whoever serves the index must keep calling `applyIndexTaps`**; if a tap dies, it takes the two host taps with it (`measured, deepseek-harness-mobile/docs/spikes/superficie-ui.md:418`).
 
 Example:
 
@@ -268,15 +268,15 @@ ctx.slots.inject("conversation.chat.assistant-actions", () => {
 
 ### 5.2 Versioning via `SlotMap`
 
-Slot names are **typed and versioned**: the set of valid `name`s comes from `SlotMap`, extended by `declaration merging` of the versioned `dsh-client-ui-*` packages (`measured, docs/spikes/superficie-ui.md:369-371`). A plugin's client half only compiles against slots its declared host UI packages expose — that is the compatibility seam. Because it also depends on React and the host slot map, a slot-registered panel breaks on a host major change.
+Slot names are **typed and versioned**: the set of valid `name`s comes from `SlotMap`, extended by `declaration merging` of the versioned `dsh-client-ui-*` packages (`measured, deepseek-harness-mobile/docs/spikes/superficie-ui.md:369-371`). A plugin's client half only compiles against slots its declared host UI packages expose — that is the compatibility seam. Because it also depends on React and the host slot map, a slot-registered panel breaks on a host major change.
 
 ### 5.3 Scope is NOT filtered
 
-`ClientModuleRegistry` iterates `ctx.loader.entries()` with **no restriction to `@deepseek-ai`** (`measured, docs/spikes/superficie-ui.md:360-364`). Any package the Loader loads that declares `dsh.client` and exports `./client` enters the graph — third parties genuinely can extend the Web UI, not by accident.
+`ClientModuleRegistry` iterates `ctx.loader.entries()` with **no restriction to `@deepseek-ai`** (`measured, deepseek-harness-mobile/docs/spikes/superficie-ui.md:360-364`). Any package the Loader loads that declares `dsh.client` and exports `./client` enters the graph — third parties genuinely can extend the Web UI, not by accident.
 
 ### 5.4 Keep your own panel (recommended)
 
-The reference gateway deliberately keeps a **self-owned panel at `/__guard`** (L1 routes + L3 tap) as the surface that *survives* host upgrades, because slot registration depends on `SlotMap` and React, while `tapIndex` depends only on the fallback owner continuing to call `applyIndexTaps` (`measured, docs/spikes/superficie-ui.md:366-372`). For robust plugins that must outlive host restructures, do both: serve your backed API + HTML at your own prefix, and optionally mirror knobs as slots.
+The reference gateway deliberately keeps a **self-owned panel at `/__guard`** (L1 routes + L3 tap) as the surface that *survives* host upgrades, because slot registration depends on `SlotMap` and React, while `tapIndex` depends only on the fallback owner continuing to call `applyIndexTaps` (`measured, deepseek-harness-mobile/docs/spikes/superficie-ui.md:366-372`). For robust plugins that must outlive host restructures, do both: serve your backed API + HTML at your own prefix, and optionally mirror knobs as slots.
 
 ---
 
@@ -325,12 +325,12 @@ The harness boots with `node --import tsx/esm` (`verified in the Guia de Contrib
 
 ## 8. Downlink to the client: WebSocket, not SSE over `/api`
 
-A plugin pushing live state to the browser should use a **WebSocket**, not a Server-Sent Events endpoint under `/api`. The DSH design already concluded this (official architecture note: *"WebSocket carrier for browser downlinks"* — https://github.com/deepseek-ai/deepseek-harness/blob/master/.agents/notes/implemented/architecture/2026-08-04-websocket-downlink-carrier.md), and the reference harness uses WebSocket for its own downlink (`reference, deepseek-harness-mobile/src/index.ts:935`; registered through `registerUpgrade`, handshake guardable — `verified, docs/spikes/api-dsh.md:418`).
+A plugin pushing live state to the browser should use a **WebSocket**, not a Server-Sent Events endpoint under `/api`. The DSH design already concluded this (official architecture note: *"WebSocket carrier for browser downlinks"* — https://github.com/deepseek-ai/deepseek-harness/blob/master/.agents/notes/implemented/architecture/2026-08-04-websocket-downlink-carrier.md), and the reference harness uses WebSocket for its own downlink (`reference, deepseek-harness-mobile/src/index.ts:935`; registered through `registerUpgrade`, handshake guardable — `verified, deepseek-harness-mobile/docs/spikes/api-dsh.md:418`).
 
 Why not SSE:
 
 - HTTP/1.1 browsers cap around **6 concurrent connections per origin**; each hung SSE occupies one forever, exhausting the pool and stalling the harness's own `/api` RPCs (narrative in the Plugin-Cordis material; the DSH moved its persistent channels to a dedicated WebSocket).
-- Over a Cloudflare quick tunnel, SSE via **GET** is buffered by the edge (cloudflared issue #1449) while WebSocket streams bidirectionally end-to-end (`measured, docs/spikes/cloudflared.md S3:204-234`).
+- Over a Cloudflare quick tunnel, SSE via **GET** is buffered by the edge (cloudflared issue #1449) while WebSocket streams bidirectionally end-to-end (`measured, deepseek-harness-mobile/docs/spikes/cloudflared.md S3:204-234`).
 
 If you must hold a channel open, hold a WebSocket and register it with `ctx.webServer.registerUpgrade({ path, handler })` (exact match only, §2.1). Guard the upgrade handshake inside your own dispatch (L2) so cross-site WebSocket hijacking is rejected (`reference, deepseek-harness-mobile/docs/TESTING.md:49`, CWE-1385).
 
@@ -353,8 +353,8 @@ Any route or barrier you add is security surface. Minimum set (all patterns come
 - **Bind:** keep `ctx.webServer.host` on `127.0.0.1` unless you really need more; enforce it at boot (`assertSecureBind`, refuse `0.0.0.0` by default — `reference, deepseek-harness-mobile/src/config/bind.ts`). On a LAN/tunnel exposure this is exactly where a missing allowlist becomes a public hole (advisory #853).
 - **Session:** use signed cookies, `HttpOnly`, `SameSite=Lax`/`Strict`, `Path=/`, regenerate the id on privilege change/invalidation. Never send the session secret to the browser.
 - **CSRF:** the reference emits a fresh per-render CSRF nonce in a `<meta>` and requires it on every mutating POST (`x-dsh-csrf` header), with `SameSite` cookies as the outer layer (`deepseek-harness-mobile/src/panel/csrf.ts`, `src/ui-contrib/html.ts`).
-- **Cookie `Secure`/`__Host-` WORKS on loopback — the belief "Secure fails on http://127.0.0.1" is refuted.** `measured, docs/spikes/superficie-ui.md S10:470-501`: Firefox 149 and Brave 149 both accept and **resend** `__Host-dsh_sid=<v>; Secure; HttpOnly; Path=/; SameSite=Strict` from `http://127.0.0.1` and `http://localhost`, and both *reject* it from a non-loopback HTTP origin (`http://192.168.122.1`). So use `__Host-` cookies with `Secure` even in local-loopback mode — the browser treats loopback as a trusted origin, and the `__Host-` prefix rule is still enforced.
-- **Host header:** the `WebServer` router ignores `Host`, but the trust gate in `dsh-web-app` validates it (`measured, docs/spikes/superficie-ui.md:155-203`): a loopback or `trustedHosts` host passes, an `attacker.example.com` or random `*.trycloudflare.com` gets 403, and DNS-rebinding is the reason it matters.
+- **Cookie `Secure`/`__Host-` WORKS on loopback — the belief "Secure fails on http://127.0.0.1" is refuted.** `measured, deepseek-harness-mobile/docs/spikes/superficie-ui.md S10:470-501`: Firefox 149 and Brave 149 both accept and **resend** `__Host-dsh_sid=<v>; Secure; HttpOnly; Path=/; SameSite=Strict` from `http://127.0.0.1` and `http://localhost`, and both *reject* it from a non-loopback HTTP origin (`http://192.168.122.1`). So use `__Host-` cookies with `Secure` even in local-loopback mode — the browser treats loopback as a trusted origin, and the `__Host-` prefix rule is still enforced.
+- **Host header:** the `WebServer` router ignores `Host`, but the trust gate in `dsh-web-app` validates it (`measured, deepseek-harness-mobile/docs/spikes/superficie-ui.md:155-203`): a loopback or `trustedHosts` host passes, an `attacker.example.com` or random `*.trycloudflare.com` gets 403, and DNS-rebinding is the reason it matters.
 
 ---
 
@@ -377,11 +377,11 @@ The unrelated claims in the honesty filter (Zero Trust 50-user limit, jcode benc
 
 ## 12. Verified sources
 
-- `@deepseek-ai/dsh-host-webserver@0.1.0-rc.7 / rc.8` — `lib/types/index.d.ts` (service `webServer`, `register`/`registerUpgrade`/`registerFallback`/`tapIndex`/`applyIndexTaps` signatures) and `lib/index.js` (route tables, duplicate throws, `match()` order, `this.server = createServer`). sha256 `b5fee946...` (`docs/spikes/api-dsh.md:418`).
+- `@deepseek-ai/dsh-host-webserver@0.1.0-rc.7 / rc.8` — `lib/types/index.d.ts` (service `webServer`, `register`/`registerUpgrade`/`registerFallback`/`tapIndex`/`applyIndexTaps` signatures) and `lib/index.js` (route tables, duplicate throws, `match()` order, `this.server = createServer`). sha256 `b5fee946...` (`deepseek-harness-mobile/docs/spikes/api-dsh.md:418`).
 - `@deepseek-ai/cordis@4.0.1` — `src/context.ts:141-145` (`intercept` body = config merge), `src/service.ts:86-93` (`resolveConfig`).
 - `@deepseek-ai/dsh-host-frontend-static@0.1.0-rc.8` — `lib/index.js:72` (`applyIndexTaps`), mounted by `dsh-web-app` (`web-runtime`).
 - `@deepseek-ai/dsh-client-ui-slots@0.1.0-rc.8` / `@deepseek-ai/dsh-client-runtime@0.1.0-rc.8` / `@deepseek-ai/dsh-client-modules@0.1.0-rc.8` — `ctx.slots` (`SlotRegistry`), slot register overloads, `dsh.client` parser, `ClientModuleRegistry` scope-free scan.
-- Spikes (measured) — `docs/spikes/api-dsh.md` (API names, `ctx.intercept` §6), `docs/spikes/interceptacao.md` (S12 barrier, 35 assertions, 7 routes), `docs/spikes/superficie-ui.md` (S4 tapIndex, S10 cookie `Secure` on loopback, fallback single-seat, no route enumeration).
+- Spikes (measured) — `deepseek-harness-mobile/docs/spikes/api-dsh.md` (API names, `ctx.intercept` §6), `deepseek-harness-mobile/docs/spikes/interceptacao.md` (S12 barrier, 35 assertions, 7 routes), `deepseek-harness-mobile/docs/spikes/superficie-ui.md` (S4 tapIndex, S10 cookie `Secure` on loopback, fallback single-seat, no route enumeration).
 - Reference repository — `deepseek-harness-mobile`: `src/http/intercept.ts`, `src/dsh/adapter.ts`, `src/ui-contrib/{html,surface}.ts`, `src/index.ts`, `cordis.patch.yml`, `package.json`.
 - Official public sources — `https://github.com/deepseek-ai/deepseek-harness` (advisory #853; architecture note "WebSocket carrier for browser downlinks"; `packages/client/hmr/README.md`; `packages/host/webserver`).
 

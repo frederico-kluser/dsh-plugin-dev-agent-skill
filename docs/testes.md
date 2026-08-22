@@ -47,7 +47,7 @@ by byte-diff against the pinned tarball.
 1. **Test observable behaviour, not implementation**: the criterion is "a request
    without a credential gets 401 with `WWW-Authenticate: Basic realm="…"`",
    never "the challengeBasicAuth function was called"
-   (`verified in …/docs/plano/04-TESTES.md:57`, principle 1).
+   (`verified in deepseek-harness-mobile/docs/plano/04-TESTES.md:57`, principle 1).
 2. **Every non-deterministic dependency is an injected seam**: clock, RNG, HTTP
    transport, `spawn`, `process.kill`, secret generation, disk reads all enter
    as dependencies with a real default (`04-TESTES.md:60`).
@@ -89,7 +89,7 @@ Two viable runners exist for a DSH plugin:
 - A DSH plugin is a pure Node library. It has no DOM, no JSX, no transform
   pipeline — the entire Vitest feature set that matters (browser mode, jsdom
   helpers, fast hot-reload DX) is useless overhead
-  (`verified in …/docs/plano/08-PESQUISA-E-FONTES.md:686`: for a pure Node lib
+  (`verified in deepseek-harness-mobile/docs/plano/08-PESQUISA-E-FONTES.md:686`: for a pure Node lib
   without DOM, node:test = zero dependencies and zero supply-chain surface).
 - **A two-runner project is a non-negotiable anti-pattern**: two mock semantics,
   two report formats, two flake sources. The skill explicitly rejects "Vitest for
@@ -125,7 +125,7 @@ The pyramid (top = run order, parenthetical = who runs it / what it proves):
 
 | layer | location | what it exercises | volume / time |
 | --- | --- | --- | --- |
-| MANUAL | docs/manual-runs/ (M1..M7) | real Telegram, real Cloudflare, real 4G phone, end-to-end streaming | ~7 runs, ~40 min |
+| MANUAL | deepseek-harness-mobile/docs/manual-runs/ (M1..M7) | real Telegram, real Cloudflare, real 4G phone, end-to-end streaming | ~7 runs, ~40 min |
 | LIVE | test/live/** | real quick tunnel, opt-in, never in PR | opt-in |
 | E2E OFFLINE | test/e2e/** | real node processes, fake cloudflared, real http on 127.0.0.1:0, real sockets — **no internet, no secret** | ~15 cases, <60 s |
 | INTEGRATION | test/integration/<area>/** | Cordis ctx double + real node:http + real IPC pipes | ~90 cases, <10 s |
@@ -144,7 +144,7 @@ Budgets (breaking a ceiling is a design bug, not a renegotiation;
 | full CI (1 Node) | 3 min | — |
 
 The full pyramid is reproduced in
-`verified in …/docs/plano/04-TESTES.md:86-115`.
+`verified in deepseek-harness-mobile/docs/plano/04-TESTES.md:86-115`.
 
 > **Reality check on the "numbers".** These volumes are the mobile case's budget,
 > reproduced as a sane target for a DSH plugin of comparable scope
@@ -189,7 +189,7 @@ Rules:
 
 One fake binary, configured by argv/env, reproducing what was **measured** about
 the real binary (verified in …/test/bin/fake-cloudflared.mjs and
-verified in …/docs/plano/08-PESQUISA-E-FONTES.md §1.3/§7.4):
+verified in deepseek-harness-mobile/docs/plano/08-PESQUISA-E-FONTES.md §1.3/§7.4):
 
 - the URL comes out of **two complementary channels, not primary/fallback**:
   ( a ) GET /quicktunnel on the metrics server returns {
@@ -469,7 +469,7 @@ e2e with the runtime. *Mocks prove wiring; only the OS proves death.*
 - Stryker has **no native runner for node:test** (feature request **#5421**
   open, no implementation). The documented path is the **tap-runner**, which
   has covered the built-in node test runner as a TAP producer since v7
-  (verified in …/docs/mutantes.md — spike verdict, measured with
+  (verified in deepseek-harness-mobile/docs/mutantes.md — spike verdict, measured with
   @stryker-mutator/core@10.0.0 + @stryker-mutator/tap-runner@10.0.0 on
   Node 24.15).
 - Config: coverageAnalysis: 'all' (**not** perTest — the tap-runner sees each
@@ -481,7 +481,7 @@ e2e with the runtime. *Mocks prove wiring; only the OS proves death.*
 
 **break: null and the mutation job does not block the PR.** The acceptance
 criterion is a **closed 50-mutant checklist**, run by hand with a fixed ritual
-(verified in …/docs/mutantes.md):
+(verified in deepseek-harness-mobile/docs/mutantes.md):
 1. apply the mutation; 2. run the named suite; 3. **require** a failure;
 4. **revert — by copy, never git checkout**.
 
@@ -718,8 +718,8 @@ Official and measured sources behind this document:
   worktree; the code shown is inspired by, not copied from, the case:
   test/support/{clock,child-double,ctx-double,telegram-server,state-dir},
   test/bin/fake-cloudflared.mjs, test/contract/dsh-types.test.ts,
-  test/security/**, docs/TESTING.md, docs/mutantes.md,
-  docs/plano/04-TESTES.md, .github/workflows/ci.yml.
+  test/security/**, docs/TESTING.md, deepseek-harness-mobile/docs/mutantes.md,
+  deepseek-harness-mobile/docs/plano/04-TESTES.md, .github/workflows/ci.yml.
 - **Node.js test runner** — node:test stable since Node 20, snapshot stable
   since 23.4, coverage thresholds by CLI: <https://nodejs.org/api/test.html>.
 - **Node.js child_process** (spawn/exit/close/error, signal, groups):
