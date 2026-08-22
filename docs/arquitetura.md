@@ -5,10 +5,10 @@
 > micro-core Cordis, o ciclo de vida de uma Fiber, os serviços do host
 > disponíveis em `inject`, a hierarquia de processos que o host orquestra, o
 > canal IPC host↔worker, o contrato de controlo e a máquina de estados do que
-> o plugin controla — e, no fim, o inventário do que NÃO fazer (anti-patterns
-> medidos).
+> what the plugin controls — and, at the end, the inventory of what NOT to do
+> (measured anti-patterns).
 >
-> **Princípio de honestidade.** Todo o facto aqui tem uma fonte marcada com
+> **Honesty principle.** Every fact here has a source tagged with
 > `verified in <path>:<line>` (aponta para o caso real em
 > `deepseek-harness-mobile` ou para os tipos byte-exatos dos tarballs
 > publicados) ou com uma URL oficial. Claims marcadas `[UNVERIFIED]` são
@@ -341,7 +341,7 @@ com dono).
 | Inv | Conteúdo |
 | --- | --- |
 | **S1** | Uma mensagem por linha, UTF-8, terminada em `\n`. Sem `\r`, sem pretty-print, sem `\n` em string por escapar. |
-| **S2** | **Disciplina de fluxo.** O worker escreve EXCLUSIVAMENTE JSONL em `stdout`; TODO o log humano vai para `stderr`. É a regra que mais se viola e falha em silêncio. |
+| **S2** | **Flow discipline.** The worker writes JSONL EXCLUSIVELY to `stdout`; any human log goes to `stderr`. It is the rule most often violated and fails silently. |
 | **S3** | Nenhum segredo no payload: nem senha, nem digest, nem token de bot, nem `ott`, nem caminho absoluto. A URL do túnel PODE viajar. |
 | **S3-b** | Exceção única e nomeada: o digest sha256 do código de pareamento de 6 dígitos pode viajar (espaço 10⁶, reversível em ms, TTL 5 min, impresso no terminal). Mas nunca sai da máquina. |
 | **S4** | Linha malformada é descartada e o canal sobrevive (json-inválido, `v` desconhecido, `type` desconhecido, linha truncada). |
@@ -649,7 +649,7 @@ descartadas no texto):**
 
 ---
 
-## Apêndice — Cobertura do filtro de honestidade (claims da comunidade)
+## Appendix — Honesty filter coverage (community claims to avoid)
 
 | Claim comum | Veredito |
 | --- | --- |

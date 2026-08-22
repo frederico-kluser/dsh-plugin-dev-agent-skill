@@ -53,7 +53,13 @@ const FORBIDDEN_SOURCE = [
 const normalize = (s) => s.replace(/\s+/g, ' ').trim().toLowerCase();
 const FORBIDDEN = [...new Set(FORBIDDEN_SOURCE.map(normalize))];
 const PROTECTED_HEADING = /(anti-pattern|avoid|proibido)/i;
-const PLACEHOLDER_RE = /\b(?:TODO|FIXME|TBD)\b|lorem(?:\s+ipsum)?|<INSIRA/i;
+// TODO/FIXME/TBD are case-SENSITIVE (uppercase or US-style prefix) so PT words like
+// 'Método' (whose trailing é breaks \b mid-word) and 'Todo' (= 'all') never
+// false-positive. A following char that is [:(\s] or end-of-line guards against a
+// letter continuation. 'lorem ipsum' and '<INSIRA' stay case-insensitive.
+const TODO_RE = /(?:^|[\sA-Z])(?:TODO|FIXME|TBD)(?:[:(\s]|$)/;
+const PLACEHOLDER_RE = (line) =>
+  TODO_RE.test(line) || /lorem(?:\s+ipsum)?|<INSIRA/i.test(line);
 const HAS_OPEN_BRACE = /\{\{/;
 const ESC = String.fromCharCode(27); // ANSI escape, avoids backslash-escape pitfalls
 
@@ -63,6 +69,9 @@ const ESC = String.fromCharCode(27); // ANSI escape, avoids backslash-escape pit
 function walkMds(dir, out = []) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     if (e.name === '.git' || e.name === 'node_modules') continue;
+    // Internal orchestration state (run-*/TASK_PLAN.md notebooks) is never published
+    // to the skill and contains refuted claims re-discussed in prose, so exclude it.
+    if (e.name === '.deep-orchestrator') continue;
     const full = path.join(dir, e.name);
     if (e.isDirectory()) walkMds(full, out);
     else if (e.name.endsWith('.md')) out.push(full);
@@ -185,7 +194,7 @@ function stageForbidden(mdList) {
 function stagePlaceholders(mdList) {
   for (const file of mdList) {
     readLines(file).forEach((line, i) => {
-      if (PLACEHOLDER_RE.test(line)) addFinding({ stage: '5-placeholders',
+      if (PLACEHOLDER_RE(line)) addFinding({ stage: '5-placeholders',
         severity: 'fail', file, line: i + 1,
         message: 'placeholder left in content: "' + line.trim().slice(0, 60) + '"' });
       if (HAS_OPEN_BRACE.test(line) && !/\}\}/.test(line)) addFinding({
