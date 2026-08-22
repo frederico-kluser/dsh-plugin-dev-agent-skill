@@ -637,7 +637,7 @@ After the e2e, the CI validates **no process survived**:
 ```
 A leaked process in a test is a bug.
 
-## 13. Honesty — what is refuted and what is not confirmed
+## 13. Honesty — refuted and unverified claims to avoid
 
 This document follows the skill's honesty filter. It **never teaches as truth**
 anything refuted by real measurement or unconfirmed; if it must mention a
