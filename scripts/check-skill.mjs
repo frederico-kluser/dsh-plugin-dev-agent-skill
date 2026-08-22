@@ -25,7 +25,7 @@ const REQUIRED_SECTIONS = [
   '## Security',
   '## Testing',
   '## Packaging & publishing',
-  '## Anti-patterns',
+  '## Anti-patterns to avoid',
 ];
 
 // Forbidden claims, copied literally from docs/PROIBIDO.md. These are REFUTED or
