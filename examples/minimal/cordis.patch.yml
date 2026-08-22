@@ -1,0 +1,55 @@
+# cordis.patch.yml — illustrative, NOT loaded by this example
+# =====================================================================
+# This file is a DIDACTIC artifact. The example plugin in src/index.ts runs
+# standalone (see README.md) and never reads this file. It exists purely to
+# teach the "golden rules" of DSH bundle patching. There is no CSS loader, no
+# bundle resolver and no DSH process involved when you run `pnpm build` or
+# `pnpm test` here.
+#
+# HOW ACTIVATION WORKS IN REAL DSH (verified, see honesty notes)
+# ---------------------------------------------------------------------
+# A DSH "bundle" (an installable package) announces what it contributes via the
+# `dsh.bundle` block in its package.json, and points its patch at a YAML file
+# like this one (`dsh.bundle.patch`). The real activation happens inside a DSH
+# profile through the CLI:
+#
+#     dsh plugin --profile <name> add <your-plugin-or-bundle>
+#
+# The harness merges the layers in this precedence order (lowest first):
+#   1. bundle   — package-level defaults shipped by installed bundles
+#   2. profile  — $DSH_HOME/profiles/<profile>/cordis.patch.yml
+#   3. home     — $DSH_HOME/cordis.patch.yml (machine-wide preferences)
+#   4. overlay  — transient CLI overrides, e.g. --patch ./overlay.yml
+#
+# GOLDEN RULES (reflect what the real harness enforces)
+# ---------------------------------------------------------------------
+# 1. NEVER collide with another plugin's id. The `id` under `insert` is the
+#    COMPOSITION CONTRACT. Two plugins sharing an id silently override each
+#    other. Use your OWN module id (here: 'dsh-plugin-dev-examples-minimal').
+#
+# 2. Resolution is WHOLE-ENTRY REPLACE, not deep merge. If a later layer names
+#    the same `id`, the ENTIRE entry from lower layers is replaced — it never
+#    merges keys. If you override a built-in module, you must re-literally
+#    restate every key you want to keep.
+#
+# 3. `bundle: {}` (an empty bundle block) does NOT activate a plugin. Activity
+#    is decided by the DSH runtime when the referenced module's required
+#    services (via `inject`) become available — a fiber stays PENDING until
+#    its dependencies resolve, then ACTIVE, and FAILED if it throws at load.
+#
+# 4. The `name` field points at what to load. It can be a bare plugin id
+#    (resolved from installed bundles), an absolute directory path to an
+#    unpacked plugin, or a `github:owner/repo` source specifier. Prefer
+#    published NPM packages over git sources (pnpm >= 10 requires a manual
+#    allowBuilds: true for git builds; see the skill's packaging doc).
+#
+# Below: an illustrative insert. It is VALID YAML you could drop into a real
+# profile, but the plugin it names is this example — so load it from its
+# absolute source dir, and note that the activation still depends on a
+# `webServer` service being provided by the surrounding DSH composition.
+
+- insert:
+  - id: dsh-plugin-dev-examples-minimal
+    name: '/abs/path/to/dsh-plugin-dev-examples-minimal/dist/index.js'
+    config:
+      greeting: 'hello from the minimal example'
