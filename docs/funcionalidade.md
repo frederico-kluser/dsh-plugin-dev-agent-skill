@@ -1,8 +1,8 @@
-# dsh-plugin-dev — Building backend functionality in a DSH plugin
+# dsh-plugin-dev-agent-skill — Building backend functionality in a DSH plugin
 
 _Creating real, stateful backend behavior in a DeepSeek Harness plugin: the plugin anatomy, typed events, tooling, long-lived control machines, subprocesses, IPC, queues and the security discipline that keeps it safe._
 
-This document is part of the **dsh-plugin-dev** skill. It assumes you have read
+This document is part of the **dsh-plugin-dev-agent-skill** skill. It assumes you have read
 [docs/arquitetura.md](arquitetura.md) and [docs/interface.md](interface.md). Where this file says "measured" it means
 _verified against the real DeepSeek Harness package_ (`@deepseek-ai/dsh@0.1.0-rc.7`
 range) and the reference plugin **dsh-guarded-bot-orchestrator**; the exact source is

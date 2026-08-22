@@ -1,6 +1,6 @@
 # Packaging, Publishing and CI for DeepSeek Harness Plugins
 
-_Reference doc of the `dsh-plugin-dev` skill. This document teaches the full
+_Reference doc of the `dsh-plugin-dev-agent-skill` skill. This document teaches the full
 release path of a Cordis plugin for DeepSeek Harness (DSH): how the source you
 commit becomes a `.tgz` that `dsh plugin --profile web add <pkg>` activates,
 and how to get that tarball to the npm registry safely and reproducibly._
@@ -933,7 +933,7 @@ _Official / external (verified via web search; URLs in text)_
 
 ---
 
-_This document is part of the `dsh-plugin-dev` skill. Cross-references:
+_This document is part of the `dsh-plugin-dev-agent-skill` skill. Cross-references:
 `docs/arquitetura.md` (Cordis model), `docs/funcionalidade.md` (plugin
 surface), `docs/seguranca.md` (threat model, secrets), `docs/testes.md` (test
 suites). The packaging recipes assume the build/type surface defined in the

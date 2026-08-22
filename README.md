@@ -1,10 +1,10 @@
-# dsh-plugin-dev
+# dsh-plugin-dev-agent-skill
 
 **The complete agent skill for building DeepSeek Harness plugins.**
 
 A self-contained, verified-by-measurement skill that teaches an AI agent (and its human) how to create, extend, secure, test, package and publish a Cordis plugin for the DeepSeek Harness (DSH) — against the real measured API surface, not against prose.
 
-[![language](https://img.shields.io/github/languages/top/frederico-kluser/dsh-plugin-dev.svg)](https://github.com/frederico-kluser/dsh-plugin-dev)
+[![language](https://img.shields.io/github/languages/top/frederico-kluser/dsh-plugin-dev-agent-skill.svg)](https://github.com/frederico-kluser/dsh-plugin-dev-agent-skill)
 [![license MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![skill global](https://img.shields.io/badge/skill-global-blue.svg)](#)
 
@@ -26,14 +26,14 @@ The skill covers six capabilities:
 The repository *is* the skill directory: the root SKILL.md, `docs/`, `examples/` and `scripts/` together form one installable skill. Clone anywhere and symlink it into your agent's skills directory:
 
 ```bash
-git clone https://github.com/frederico-kluser/dsh-plugin-dev.git ~/Projects/dsh-plugin-dev
+git clone https://github.com/frederico-kluser/dsh-plugin-dev-agent-skill.git ~/Projects/dsh-plugin-dev-agent-skill
 mkdir -p ~/.agents/skills
-ln -s ~/Projects/dsh-plugin-dev ~/.agents/skills/dsh-plugin-dev
+ln -s ~/Projects/dsh-plugin-dev-agent-skill ~/.agents/skills/dsh-plugin-dev-agent-skill
 ```
 
 - The skill directory is the whole repository — SKILL.md at the root, plus `docs/`, `examples/` and `scripts/`.
 - `docs/*.md` are canonical references an agent loads **on demand** by topic; it does not read them all up front.
-- To uninstall, remove the symlink: `rm ~/.agents/skills/dsh-plugin-dev`. The cloned repo can stay or go.
+- To uninstall, remove the symlink: `rm ~/.agents/skills/dsh-plugin-dev-agent-skill`. The cloned repo can stay or go.
 - Other agent tools read skills from their own paths (e.g. `~/.claude/skills`); point the same symlink there — the skill is backend-agnostic.
 
 ## How it works

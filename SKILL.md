@@ -1,9 +1,9 @@
 ---
-name: dsh-plugin-dev
+name: dsh-plugin-dev-agent-skill
 description: Create, extend and publish plugins for the DeepSeek Harness (DSH). Use to build new functionality, change the web interface, integrate services, write tests, or publish a Cordis plugin for DSH — covering architecture, frontend (dsh-host-webserver), backend, IPC, security, testing and packaging, based on verified official materials. Triggers: "DSH plugin", "create a plugin for DeepSeek Harness", "change the DSH interface", "add functionality to DSH".
 ---
 
-# dsh-plugin-dev — Build, extend and publish DeepSeek Harness plugins
+# dsh-plugin-dev-agent-skill — Build, extend and publish DeepSeek Harness plugins
 
 Everything in DeepSeek Harness (DSH) is a plugin, including the agent loop itself. The user-facing extension path is *never* a pull request against the official repo (the maintainers do not accept external PRs) and *always* a Cordis plugin you publish yourself and tag with the GitHub topic "dsh-plugin". This skill tells you how to build, extend and publish such a plugin against the real, measured API surface — not against prose.
 
@@ -23,7 +23,7 @@ Everything in DeepSeek Harness (DSH) is a plugin, including the agent loop itsel
 The whole repository is the skill directory — the root SKILL.md, docs/, examples/ and scripts/. Symlink the repository into the skills directory:
 
 ```bash
-ln -s <path-to-repository> ~/.agents/skills/dsh-plugin-dev
+ln -s <path-to-repository> ~/.agents/skills/dsh-plugin-dev-agent-skill
 ```
 
 The root SKILL.md is the entry point. docs/ are canonical references loaded on demand by section; you do not read them all up front. examples/ and scripts/ provide skeletons and validation tooling.

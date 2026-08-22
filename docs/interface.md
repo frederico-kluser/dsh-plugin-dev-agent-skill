@@ -1,6 +1,6 @@
 # Changing the DSH Interface from a Plugin — docs/interface.md
 
-**Skill:** dsh-plugin-dev · **Audience:** plugin authors for the DeepSeek Harness (DSH) · **Status:** verified against the real packages (0.1.0-rc.7 .. 0.1.1-rc.1) and measured experiments.
+**Skill:** dsh-plugin-dev-agent-skill · **Audience:** plugin authors for the DeepSeek Harness (DSH) · **Status:** verified against the real packages (0.1.0-rc.7 .. 0.1.1-rc.1) and measured experiments.
 
 This document answers one question: **how does a DSH plugin change the interface the user sees and talks to?** Every mechanism below is a *reversible effect*: it returns a disposer and is torn down automatically when the Cordis fiber that installed it is disposed (config reload, HMR replacement, plugin unload, or a crashed dependency). Nothing here teaches you to fork the harness — the whole point of the DSH design is that these surfaces are owned, not patched.
 

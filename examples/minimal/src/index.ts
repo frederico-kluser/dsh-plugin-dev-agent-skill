@@ -1,5 +1,5 @@
 /**
- * dsh-plugin-dev — minimal example plugin.
+ * dsh-plugin-dev-agent-skill — minimal example plugin.
  *
  * A REAL, compilable Cordis plugin for the DeepSeek Harness (DSH), kept tiny on
  * purpose so each concept is legible. It is a "function topology" plugin: it

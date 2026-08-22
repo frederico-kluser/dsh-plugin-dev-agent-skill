@@ -1,6 +1,6 @@
 # Testing a DeepSeek Harness Plugin — Strategy, Doubles, Contract, Adversarial, Mutation, Coverage, CI
 
-> Part of the **dsh-plugin-dev** skill (docs/). Written by the W2 tests writer.
+> Part of the **dsh-plugin-dev-agent-skill** skill (docs/). Written by the W2 tests writer.
 > Public-facing content: **English**. Every factual claim carries a source
 > (`verified in <path>:<line>` or an official URL). Claims that are not
 > confirmed are marked **[UNVERIFIED]** and go through the honesty gate in §14.

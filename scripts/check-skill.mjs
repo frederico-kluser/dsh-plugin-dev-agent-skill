@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * check-skill.mjs — zero-dependency self-check validator for the dsh-plugin-dev skill.
+ * check-skill.mjs — zero-dependency self-check validator for the dsh-plugin-dev-agent-skill skill.
  * Validates the skill repo (parent of scripts/):
  *   1 frontmatter   2 mandatory sections   3 internal links
  *   4 forbidden claims (hard FAIL in prose, WARN in Anti-patterns)   5 placeholders

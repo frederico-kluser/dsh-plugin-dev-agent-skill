@@ -1,6 +1,6 @@
 # Arquitetura do DeepSeek Harness — referência para autores de plugins
 
-> Documento de ARQUITETURA da skill `dsh-plugin-dev`. Explica o modelo mental
+> Documento de ARQUITETURA da skill `dsh-plugin-dev-agent-skill`. Explica o modelo mental
 > correto para escrever um plugin Cordis para o DeepSeek Harness (DSH): o
 > micro-core Cordis, o ciclo de vida de uma Fiber, os serviços do host
 > disponíveis em `inject`, a hierarquia de processos que o host orquestra, o

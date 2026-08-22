@@ -1,6 +1,6 @@
 # examples/minimal — a minimal Cordis plugin for DeepSeek Harness
 
-A tiny, **standalone, compilable** Cordis plugin that demonstrates the core concepts of the dsh-plugin-dev skill. It is not a finished DSH UI panel or tool — it is a deliberately small webServer plugin you can build and test on its own, in seconds, with zero DSH install.
+A tiny, **standalone, compilable** Cordis plugin that demonstrates the core concepts of the dsh-plugin-dev-agent-skill skill. It is not a finished DSH UI panel or tool — it is a deliberately small webServer plugin you can build and test on its own, in seconds, with zero DSH install.
 
 ## What it demonstrates
 

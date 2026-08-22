@@ -1,8 +1,8 @@
 {
-  "name": "dsh-plugin-dev-examples-minimal",
+  "name": "dsh-plugin-dev-agent-skill-examples-minimal",
   "version": "0.0.0",
   "private": true,
-  "description": "A minimal, standalone, compilable Cordis plugin for the DeepSeek Harness (DSH), demonstrating the core concepts of the dsh-plugin-dev skill.",
+  "description": "A minimal, standalone, compilable Cordis plugin for the DeepSeek Harness (DSH), demonstrating the core concepts of the dsh-plugin-dev-agent-skill skill.",
   "type": "module",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",

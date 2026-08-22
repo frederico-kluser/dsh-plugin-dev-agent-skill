@@ -25,7 +25,7 @@
 # ---------------------------------------------------------------------
 # 1. NEVER collide with another plugin's id. The `id` under `insert` is the
 #    COMPOSITION CONTRACT. Two plugins sharing an id silently override each
-#    other. Use your OWN module id (here: 'dsh-plugin-dev-examples-minimal').
+#    other. Use your OWN module id (here: 'dsh-plugin-dev-agent-skill-examples-minimal').
 #
 # 2. Resolution is WHOLE-ENTRY REPLACE, not deep merge. If a later layer names
 #    the same `id`, the ENTIRE entry from lower layers is replaced — it never
@@ -49,7 +49,7 @@
 # `webServer` service being provided by the surrounding DSH composition.
 
 - insert:
-  - id: dsh-plugin-dev-examples-minimal
-    name: '/abs/path/to/dsh-plugin-dev-examples-minimal/dist/index.js'
+  - id: dsh-plugin-dev-agent-skill-examples-minimal
+    name: '/abs/path/to/dsh-plugin-dev-agent-skill-examples-minimal/dist/index.js'
     config:
       greeting: 'hello from the minimal example'
